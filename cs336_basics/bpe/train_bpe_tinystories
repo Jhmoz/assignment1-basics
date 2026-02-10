@@ -1,0 +1,47 @@
+from bpe_tokenizer import train_bpe
+import os
+import time
+import pickle as pkl
+
+
+root_dir = "/mnt/lp-dw/zhang_yingying/test/cs336/assignment/assignment1/assignment1-basics"
+output_dir = os.path.join(root_dir, "cs336_basics/bpe/output")
+os.makedirs(output_dir, exist_ok=True)
+corpus_fp = os.path.join(root_dir, "data/TinyStoriesV2-GPT4-train.txt")
+
+start_time = time.time()
+vocab, merges = train_bpe(
+    input_path=corpus_fp,
+    vocab_size=10000,
+    special_tokens=["<|endoftext|>"],
+    num_processes=32
+)
+end_time = time.time()
+print(f"total costs: {end_time-start_time:.2f}s")
+
+
+with open(os.path.join(output_dir, "TinyStoriesVocab.pkl"), "wb") as f:
+    pkl.dump(vocab, f)
+
+with open(os.path.join(output_dir, "TinyStoriesMerges.pkl"), "wb") as f:
+    pkl.dump(merges, f)
+
+"""
+BPETrainingonTinyStories Answer (num_processes=32)
+total costs: 221.26s
+
+du -h output/TinyStoriesVocab.pkl
+>>> 115K    output/TinyStoriesVocab.pkl
+
+du -h output_dir/TinyStoriesMerges.pkl
+>>> 108K    output/TinyStoriesMerges.pkl
+
+>>> longest_token_id
+7160
+>>> vocab[longest_token_id]
+b' accomplishment
+
+
+What part of the tokenizer training process takes the most time
+update_byte2count_with_heap func  cumtime:175.715 + 82.276s  percall 76%
+"""
